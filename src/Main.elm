@@ -6,7 +6,7 @@ import Array exposing (fromList, get)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on)
+import Html.Events exposing (onClick)
 import List exposing (length)
 import String
 
@@ -74,26 +74,7 @@ type Color
     | Orange
     | Brown
 
-
-
--- colorOptions : List ( String, Color )
--- colorOptions =
---     [ ( colorToString Dog, Dog )
---     , ( colorToString Otter, Otter )
---     , ( colorToString Waffle, Waffle )
---     , ( colorToString Planet, Planet )
---     , ( colorToString Axe, Axe )
---     , ( colorToString Clover, Clover )
---     , ( colorToString Red, Red )
---     , ( colorToString Blue, Blue )
---     , ( colorToString Yellow, Yellow )
---     , ( colorToString Purple, Purple )
---     , ( colorToString Black, Black )
---     , ( colorToString Orange, Orange )
---     , ( colorToString Brown, Brown )
---     ]
 ---- MODEL ----
-
 
 type alias Model =
     { row : Int
@@ -129,17 +110,17 @@ generateGrid dimension =
             []
 
         _ ->
-            generateList (length colors) :: generateGrid (dimension - 1)
+            generateList (length colors, dimension) :: generateGrid (dimension - 1)
 
 
-generateList : Int -> List String
-generateList size =
+generateList : (Int, Int) -> List String
+generateList (size, curr) =
     case size of
         0 ->
             []
 
         _ ->
-            getEmoji ( size - 1, colors ) :: generateList (size - 1)
+            getEmoji ( curr + 1, colors ) :: generateList (size - 1, curr)
 
 
 getEmoji : ( Int, List String ) -> String
@@ -158,6 +139,10 @@ getEmoji ( index, options ) =
 
 type Msg
     = ChangeColor Color
+    | Up
+    | Down
+    | Left
+    | Right
     | NoOp
 
 
@@ -166,10 +151,49 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+        Up ->
+            ( { model | row = up (model.row - 1) }, Cmd.none)
 
+        Down ->
+            ( { model | row = down (model.row + 1) }, Cmd.none)
+
+        Left ->
+            ( { model | column = left (model.column - 1) }, Cmd.none)
+         
+        Right ->
+            ( { model | column = right (model.column + 1) }, Cmd.none)
         ChangeColor color ->
             ( { model | selectedColor = color }, Cmd.none )
 
+
+up : Int -> Int
+up row =
+    if row < 0 then
+        length colors - 1
+    else
+        row
+
+        
+down : Int -> Int
+down row =
+    if row == length colors then
+        0
+    else
+        row
+
+right : Int -> Int
+right column =
+    if column == length colors then
+        0
+    else
+        column
+
+left : Int -> Int
+left row =
+    if row < 0 then
+        length colors - 1
+    else
+        row
 
 
 ---- VIEW ----
@@ -181,6 +205,10 @@ view model =
         [ h1 [] [ text "Elm Color Fill Game!" ]
         , p [] [ text ("Row: " ++ String.fromInt model.row) ]
         , p [] [ text ("Column: " ++ String.fromInt model.column) ]
+        , button [ onClick Up ] [ text "^" ]
+        , button [ onClick Down ] [ text "v" ]
+        , button [ onClick Left ] [ text "<" ]
+        , button [ onClick Right ] [ text ">" ]
         , renderGrid model.grid
         ]
 
