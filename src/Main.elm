@@ -15,19 +15,19 @@ colorToString : Color -> String
 colorToString c =
     case c of
         Dog ->
-            "\u{1F9AE}"
+            "🦮"
 
         Otter ->
-            "\u{1F9A6}"
+            "🦦"
 
         Waffle ->
-            "\u{1F9C7}"
+            "🧇"
 
         Planet ->
-            "\u{1FA90}"
+            "🪐"
 
         Axe ->
-            "\u{1FA93}"
+            "🪓"
 
         Clover ->
             "☘️"
@@ -56,7 +56,7 @@ colorToString c =
 
 colors : List String
 colors =
-    [ "\u{1F9AE}", "\u{1F9A6}", "\u{1F9C7}", "\u{1FA90}", "\u{1FA93}", "☘️", "🔴", "💙", "💛", "💜", "⬛️", "🔶", "📦" ]
+    [ "🦮", "🦦", "🧇", "🪐", "🪓", "☘️", "🔴", "💙", "💛", "💜", "⬛️", "🔶", "📦" ]
 
 
 type Color
