@@ -26,9 +26,6 @@ colorToString c =
         Planet ->
             "🪐"
 
-        Axe ->
-            "🪓"
-
         Clover ->
             "☘️"
 
@@ -47,16 +44,10 @@ colorToString c =
         Black ->
             "⬛️"
 
-        Orange ->
-            "🔶"
 
-        Brown ->
-            "📦"
-
-
-colors : List String
+colors : List Color
 colors =
-    [ "🦮", "🦦", "🧇", "🪐", "🪓", "☘️", "🔴", "💙", "💛", "💜", "⬛️", "🔶", "📦" ]
+    [ Dog, Otter, Waffle, Planet, Clover, Red, Blue, Yellow, Purple, Black ]
 
 
 type Color
@@ -64,15 +55,12 @@ type Color
     | Otter
     | Waffle
     | Planet
-    | Axe
     | Clover
     | Red
     | Blue
     | Yellow
     | Purple
     | Black
-    | Orange
-    | Brown
 
 ---- MODEL ----
 
@@ -84,7 +72,7 @@ type alias Model =
     , moveCount : Int
     , completed : Bool
     , teleportEnabled : Bool
-    , grid : List (List String)
+    , grid : List (List Color)
     }
 
 
@@ -102,35 +90,38 @@ init =
     , Cmd.none
     )
 
+generateGrid : Int -> List (List Color)
+generateGrid dimension = 
+    generateGridHelper dimension dimension
 
-generateGrid : Int -> List (List String)
-generateGrid dimension =
-    case dimension of
+generateGridHelper : Int -> Int -> List (List Color)
+generateGridHelper dimension curr =
+    case curr of
         0 ->
             []
 
         _ ->
-            generateList (length colors, dimension) :: generateGrid (dimension - 1)
+            generateList dimension (getEmoji (curr, colors)) :: generateGridHelper dimension (curr - 1)
 
 
-generateList : (Int, Int) -> List String
-generateList (size, curr) =
+generateList : Int -> Color -> List Color
+generateList size color =
     case size of
         0 ->
             []
 
         _ ->
-            getEmoji ( curr + 1, colors ) :: generateList (size - 1, curr)
+            color :: generateList (size - 1) color
 
 
-getEmoji : ( Int, List String ) -> String
+getEmoji : ( Int, List Color ) -> Color
 getEmoji ( index, options ) =
     case get index (fromList options) of
         Just emoji ->
             emoji
 
         Nothing ->
-            "_"
+            Dog
 
 
 
@@ -213,17 +204,17 @@ view model =
         ]
 
 
-renderGrid : List (List String) -> Html msg
+renderGrid : List (List Color) -> Html msg
 renderGrid grd =
     grd
         |> List.map (\l -> ul [ class "row" ] [ renderList l ])
         |> ul []
 
 
-renderList : List String -> Html msg
+renderList : List Color -> Html msg
 renderList lst =
     lst
-        |> List.map (\l -> li [] [ text l ])
+        |> List.map (\l -> li [] [ text (colorToString l) ])
         |> ul []
 
 
