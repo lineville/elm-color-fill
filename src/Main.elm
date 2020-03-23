@@ -17,8 +17,8 @@ colorToString c =
         Alien ->
             "👽"
 
-        White ->
-            "🤍"
+        Unicorn ->
+            "🦄"
 
         Wave ->
             "👋"
@@ -47,12 +47,12 @@ colorToString c =
 
 colors : List Color
 colors =
-    [ Alien, White, Wave, Tiger, Clover, Red, Blue, Yellow, Purple, Black ]
+    [ Alien, Unicorn, Wave, Tiger, Clover, Red, Blue, Yellow, Purple, Black ]
 
 
 type Color
     = Alien
-    | White
+    | Unicorn
     | Wave
     | Tiger
     | Clover
