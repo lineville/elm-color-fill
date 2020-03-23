@@ -14,17 +14,17 @@ import String
 colorToString : Color -> String
 colorToString c =
     case c of
-        Dog ->
-            "🦮"
+        Alien ->
+            "👽"
 
-        Otter ->
-            "🦦"
+        White ->
+            "🤍"
 
-        Waffle ->
-            "🧇"
+        Wave ->
+            "👋"
 
-        Planet ->
-            "🪐"
+        Tiger ->
+            "🐅"
 
         Clover ->
             "☘️"
@@ -47,14 +47,14 @@ colorToString c =
 
 colors : List Color
 colors =
-    [ Dog, Otter, Waffle, Planet, Clover, Red, Blue, Yellow, Purple, Black ]
+    [ Alien, White, Wave, Tiger, Clover, Red, Blue, Yellow, Purple, Black ]
 
 
 type Color
-    = Dog
-    | Otter
-    | Waffle
-    | Planet
+    = Alien
+    | White
+    | Wave
+    | Tiger
     | Clover
     | Red
     | Blue
@@ -80,7 +80,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { row = 0
       , column = 0
-      , selectedColor = Dog
+      , selectedColor = Alien
       , moveCount = 0
       , fillCount = 0
       , completed = False
@@ -121,7 +121,7 @@ getEmoji ( index, options ) =
             emoji
 
         Nothing ->
-            Dog
+            Alien
 
 
 
@@ -143,48 +143,48 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
         Up ->
-            ( { model | row = up (model.row - 1) }, Cmd.none)
+            ( { model | row = up model.row }, Cmd.none)
 
         Down ->
-            ( { model | row = down (model.row + 1) }, Cmd.none)
+            ( { model | row = down model.row }, Cmd.none)
 
         Left ->
-            ( { model | column = left (model.column - 1) }, Cmd.none)
+            ( { model | column = left model.column }, Cmd.none)
          
         Right ->
-            ( { model | column = right (model.column + 1) }, Cmd.none)
+            ( { model | column = right model.column }, Cmd.none)
         ChangeColor color ->
             ( { model | selectedColor = color }, Cmd.none )
 
 
 up : Int -> Int
 up row =
-    if row < 0 then
+    if row <= 0 then
         length colors - 1
     else
-        row
+        row - 1
 
         
 down : Int -> Int
 down row =
-    if row == length colors then
+    if row >= length colors - 1 then
         0
     else
-        row
+        row + 1
 
 right : Int -> Int
 right column =
-    if column == length colors then
+    if column >= length colors - 1 then
         0
     else
-        column
+        column + 1
 
 left : Int -> Int
-left row =
-    if row < 0 then
+left column =
+    if column <= 0 then
         length colors - 1
     else
-        row
+        column - 1
 
 
 ---- VIEW ----
