@@ -28,30 +28,33 @@ all =
 colorFillTests : Test
 colorFillTests = 
     describe "Color Fill"
-        [ test "getEmoji should get a dog" <|
+        [ test "getEmoji should get an Alien" <|
             \_ ->
-                Expect.equal (getEmoji (0, colors)) "🦮"
+                Expect.equal (getEmoji (0, colors)) Alien
 
-        , test "getEmoji should get an otter" <|
+        , test "getEmoji should get a Unicorn" <|
             \_ ->
-                Expect.equal (getEmoji (1, colors)) "🦦"
+                Expect.equal (getEmoji (1, colors)) Unicorn
         
         , test "generateList should create a new list" <|
             \_ ->
-                Expect.equalLists (generateList (10, 10)) ["🔶", "🔶", "🔶", "🔶", "🔶", "🔶", "🔶", "🔶", "🔶", "🔶"]
+                Expect.equalLists (generateList 10 Unicorn) [Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn]
 
         , test "generateGrid should create a new grid" <|
             \_ ->
                 Expect.equalLists (generateGrid 10) [
-                    ["🔶", "🔶", "🔶", "🔶", "🔶", "🔶", "🔶", "🔶", "🔶","🔶"]
-                ,   ["⬛️","⬛️","⬛️","⬛️","⬛️","⬛️","⬛️","⬛️","⬛️","⬛️"]
-                ,   ["💜","💜","💜","💜","💜","💜","💜","💜","💜","💜"]
-                ,   ["💛","💛","💛","💛","💛","💛","💛","💛","💛","💛"]
-                ,   ["💙","💙","💙","💙","💙","💙","💙","💙","💙","💙"]
-                ,   ["🔴","🔴","🔴","🔴","🔴","🔴","🔴","🔴","🔴","🔴"]
-                ,   ["☘️","☘️","☘️","☘️","☘️","☘️","☘️","☘️","☘️","☘️"]
-                ,   ["🪓","🪓","🪓","🪓","🪓","🪓","🪓","🪓","🪓","🪓"]
-                ,   ["🪐","🪐","🪐","🪐","🪐","🪐","🪐","🪐","🪐","🪐"]
-                ,   ["🧇","🧇","🧇","🧇","🧇","🧇","🧇","🧇","🧇","🧇"]]
+                    [Black, Black, Black, Black, Black, Black, Black, Black, Black,Black]
+                ,   [Purple, Purple, Purple, Purple, Purple, Purple, Purple, Purple, Purple,Purple]
+                ,   [Yellow, Yellow, Yellow, Yellow, Yellow, Yellow, Yellow, Yellow, Yellow,Yellow]
+                ,   [Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue, Blue,Blue]
+                ,   [Red, Red, Red, Red, Red, Red, Red, Red, Red,Red]
+                ,   [Clover, Clover, Clover, Clover, Clover, Clover, Clover, Clover, Clover,Clover]
+                ,   [Tiger, Tiger, Tiger, Tiger, Tiger, Tiger, Tiger, Tiger, Tiger,Tiger]
+                ,   [Wave, Wave, Wave, Wave, Wave, Wave, Wave, Wave, Wave,Wave]
+                ,   [Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn, Unicorn,Unicorn]
+                ,   [Alien , Alien, Alien, Alien, Alien, Alien, Alien, Alien, Alien, Alien]
+                ]
+
 
         ]
+

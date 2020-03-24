@@ -5,9 +5,10 @@ module Main exposing (..)
 import Array exposing (fromList, get)
 import Browser
 import Html exposing (..)
+import Browser.Events as Events
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
 import List exposing (length)
+import Json.Decode as Decode
 import String
 
 
@@ -101,7 +102,7 @@ generateGridHelper dimension curr =
             []
 
         _ ->
-            generateList dimension (getEmoji (curr, colors)) :: generateGridHelper dimension (curr - 1)
+            generateList dimension (getEmoji (curr - 1, colors)) :: generateGridHelper dimension (curr - 1)
 
 
 generateList : Int -> Color -> List Color
@@ -127,13 +128,21 @@ getEmoji ( index, options ) =
 
 ---- UPDATE ----
 
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.batch
+        [ Events.onKeyDown (Decode.map KeyDowns keyDecoder)
+        , Events.onKeyUp (Decode.succeed ClearPressed)
+        ]
 
 type Msg
     = ChangeColor Color
-    | Up
-    | Down
-    | Left
-    | Right
+    | KeyDowns Direction
+    | ClearPressed
+    | MoveUp
+    | MoveDown
+    | MoveLeft
+    | MoveRight
     | NoOp
 
 
@@ -142,20 +151,68 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
-        Up ->
+        MoveUp ->
             ( { model | row = up model.row }, Cmd.none)
 
-        Down ->
+        MoveDown ->
             ( { model | row = down model.row }, Cmd.none)
 
-        Left ->
+        MoveLeft ->
             ( { model | column = left model.column }, Cmd.none)
          
-        Right ->
+        MoveRight ->
             ( { model | column = right model.column }, Cmd.none)
+        
         ChangeColor color ->
             ( { model | selectedColor = color }, Cmd.none )
 
+        KeyDowns code ->
+            ( case code of
+                Up ->
+                    { model | row = up model.row, moveCount = model.moveCount + 1 }
+                Down ->
+                    { model | row = down model.row, moveCount = model.moveCount + 1 }
+                Left ->
+                    { model | column = left model.column, moveCount = model.moveCount + 1 }
+                Right ->
+                    { model | column = right model.column, moveCount = model.moveCount + 1 }
+                None ->
+                    model
+            , Cmd.none
+            )
+
+        -- Flush the whole model on `keyup`, helps to remove not pressed keys, if focus was lost from the window.
+        ClearPressed ->
+            ( model, Cmd.none )
+
+
+type Direction
+  = Up
+  | Down
+  | Left
+  | Right
+  | None
+
+keyDecoder : Decode.Decoder Direction
+keyDecoder =
+  Decode.map toDirection (Decode.field "key" Decode.string)
+
+toDirection : String -> Direction
+toDirection string =
+  case string of
+    "ArrowLeft" ->
+      Left
+
+    "ArrowRight" ->
+      Right
+
+    "ArrowUp" ->
+        Up
+
+    "ArrowDown" ->
+        Down
+    _ ->
+        None
 
 up : Int -> Int
 up row =
@@ -193,28 +250,34 @@ left column =
 view : Model -> Html Msg
 view model =
     div [ id "grid" ]
-        [ h1 [] [ text "Elm Color Fill Game!" ]
-        , p [] [ text ("Row: " ++ String.fromInt model.row) ]
-        , p [] [ text ("Column: " ++ String.fromInt model.column) ]
-        , button [ onClick Up ] [ text "^" ]
-        , button [ onClick Down ] [ text "v" ]
-        , button [ onClick Left ] [ text "<" ]
-        , button [ onClick Right ] [ text ">" ]
-        , renderGrid model.grid
+        [ 
+            
+        h1 [] [ text "Elm Color Fill Game! Use the arrow keys to navigate the grid" ]
+        
+        , ul [class "row"] [
+                li [] [ p [] [ text ("Row: " ++ String.fromInt model.row) ] ]
+            ,   li [] [p [] [ text ("Row: " ++ String.fromInt model.row) ]]
+            ,   li [] [p [] [ text ("Moves: " ++ String.fromInt model.moveCount) ]]
+        ]
+        
+        , renderGrid model.grid model.row model.column
+        
         ]
 
 
-renderGrid : List (List Color) -> Html msg
-renderGrid grd =
+renderGrid : List (List Color) -> Int -> Int -> Html msg
+renderGrid grd row col =
     grd
-        |> List.map (\l -> ul [ class "row" ] [ renderList l ])
+        |> List.indexedMap (\idx l -> ul [ class "row" ] [ renderList l row col idx])
         |> ul []
 
 
-renderList : List Color -> Html msg
-renderList lst =
+renderList : List Color -> Int -> Int -> Int -> Html msg
+renderList lst row col currCol =
     lst
-        |> List.map (\l -> li [] [ text (colorToString l) ])
+        |> List.indexedMap (\idx l -> if row == idx && col == currCol then
+         li [class "selected"] [ text (colorToString l) ] else
+         li [] [ text (colorToString l) ])
         |> ul []
 
 
@@ -229,5 +292,5 @@ main =
         { view = view
         , init = \_ -> init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
