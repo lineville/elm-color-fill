@@ -8,7 +8,7 @@ import Browser.Events as Events
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode as Decode
-import List exposing (length)
+import List exposing (append, length)
 import String
 
 
@@ -187,7 +187,12 @@ update msg model =
 
 chomp : List (List Color) -> List (List Color)
 chomp grid =
-    grid
+    case grid of
+        [] ->
+            []
+
+        x :: xs ->
+            append xs [ x ]
 
 
 type Direction
@@ -207,16 +212,28 @@ keyDecoder =
 toDirection : String -> Direction
 toDirection string =
     case string of
-        "ArrowLeft" ->
+        "LeftArrow" ->
+            Left
+
+        "a" ->
             Left
 
         "ArrowRight" ->
             Right
 
+        "d" ->
+            Right
+
         "ArrowUp" ->
             Up
 
+        "w" ->
+            Up
+
         "ArrowDown" ->
+            Down
+
+        "s" ->
             Down
 
         "Enter" ->
@@ -270,7 +287,7 @@ view : Model -> Html Msg
 view model =
     div [ id "grid" ]
         [ h2 [] [ text "Elm Candy Chomper!" ]
-        , p [] [ text "Use the arrow keys to navigate the grid and enter to chomp!" ]
+        , p [] [ text "Use the arrow keys or WASD to navigate the grid and enter to chomp!" ]
         , p [] [ text ("Location: (" ++ String.fromInt model.row ++ ", " ++ String.fromInt model.column ++ ") Moves: " ++ String.fromInt model.moveCount ++ " Fills: " ++ String.fromInt model.fillCount) ]
         , renderGrid model.grid model.row model.column
         ]
