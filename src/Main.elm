@@ -4,11 +4,11 @@ module Main exposing (..)
 
 import Array exposing (fromList, get)
 import Browser
-import Html exposing (..)
 import Browser.Events as Events
+import Html exposing (..)
 import Html.Attributes exposing (..)
-import List exposing (length)
 import Json.Decode as Decode
+import List exposing (length)
 import String
 
 
@@ -19,7 +19,7 @@ colorToString c =
             "👽"
 
         Unicorn ->
-            "🦄"
+            "\u{1F984}"
 
         Wave ->
             "👋"
@@ -63,7 +63,10 @@ type Color
     | Purple
     | Black
 
+
+
 ---- MODEL ----
+
 
 type alias Model =
     { row : Int
@@ -91,9 +94,11 @@ init =
     , Cmd.none
     )
 
+
 generateGrid : Int -> List (List Color)
-generateGrid dimension = 
+generateGrid dimension =
     generateGridHelper dimension dimension
+
 
 generateGridHelper : Int -> Int -> List (List Color)
 generateGridHelper dimension curr =
@@ -102,7 +107,7 @@ generateGridHelper dimension curr =
             []
 
         _ ->
-            generateList dimension (getEmoji (curr - 1, colors)) :: generateGridHelper dimension (curr - 1)
+            generateList dimension (getEmoji ( curr - 1, colors )) :: generateGridHelper dimension (curr - 1)
 
 
 generateList : Int -> Color -> List Color
@@ -128,6 +133,7 @@ getEmoji ( index, options ) =
 
 ---- UPDATE ----
 
+
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
@@ -135,14 +141,11 @@ subscriptions _ =
         , Events.onKeyUp (Decode.succeed ClearPressed)
         ]
 
+
 type Msg
     = ChangeColor Color
     | KeyDowns Direction
     | ClearPressed
-    | MoveUp
-    | MoveDown
-    | MoveLeft
-    | MoveRight
     | NoOp
 
 
@@ -151,18 +154,7 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
-        MoveUp ->
-            ( { model | row = up model.row }, Cmd.none)
 
-        MoveDown ->
-            ( { model | row = down model.row }, Cmd.none)
-
-        MoveLeft ->
-            ( { model | column = left model.column }, Cmd.none)
-         
-        MoveRight ->
-            ( { model | column = right model.column }, Cmd.none)
-        
         ChangeColor color ->
             ( { model | selectedColor = color }, Cmd.none )
 
@@ -170,12 +162,19 @@ update msg model =
             ( case code of
                 Up ->
                     { model | row = up model.row, moveCount = model.moveCount + 1 }
+
                 Down ->
                     { model | row = down model.row, moveCount = model.moveCount + 1 }
+
                 Left ->
                     { model | column = left model.column, moveCount = model.moveCount + 1 }
+
                 Right ->
                     { model | column = right model.column, moveCount = model.moveCount + 1 }
+
+                Enter ->
+                    { model | grid = chomp model.grid, fillCount = model.fillCount + 1 }
+
                 None ->
                     model
             , Cmd.none
@@ -186,62 +185,82 @@ update msg model =
             ( model, Cmd.none )
 
 
+chomp : List (List Color) -> List (List Color)
+chomp grid =
+    grid
+
+
 type Direction
-  = Up
-  | Down
-  | Left
-  | Right
-  | None
+    = Up
+    | Down
+    | Left
+    | Right
+    | Enter
+    | None
+
 
 keyDecoder : Decode.Decoder Direction
 keyDecoder =
-  Decode.map toDirection (Decode.field "key" Decode.string)
+    Decode.map toDirection (Decode.field "key" Decode.string)
+
 
 toDirection : String -> Direction
 toDirection string =
-  case string of
-    "ArrowLeft" ->
-      Left
+    case string of
+        "ArrowLeft" ->
+            Left
 
-    "ArrowRight" ->
-      Right
+        "ArrowRight" ->
+            Right
 
-    "ArrowUp" ->
-        Up
+        "ArrowUp" ->
+            Up
 
-    "ArrowDown" ->
-        Down
-    _ ->
-        None
+        "ArrowDown" ->
+            Down
+
+        "Enter" ->
+            Enter
+
+        _ ->
+            None
+
 
 up : Int -> Int
 up row =
     if row <= 0 then
         length colors - 1
+
     else
         row - 1
 
-        
+
 down : Int -> Int
 down row =
     if row >= length colors - 1 then
         0
+
     else
         row + 1
+
 
 right : Int -> Int
 right column =
     if column >= length colors - 1 then
         0
+
     else
         column + 1
+
 
 left : Int -> Int
 left column =
     if column <= 0 then
         length colors - 1
+
     else
         column - 1
+
 
 
 ---- VIEW ----
@@ -250,34 +269,31 @@ left column =
 view : Model -> Html Msg
 view model =
     div [ id "grid" ]
-        [ 
-            
-        h1 [] [ text "Elm Color Fill Game! Use the arrow keys to navigate the grid" ]
-        
-        , ul [class "row"] [
-                li [] [ p [] [ text ("Row: " ++ String.fromInt model.row) ] ]
-            ,   li [] [p [] [ text ("Row: " ++ String.fromInt model.row) ]]
-            ,   li [] [p [] [ text ("Moves: " ++ String.fromInt model.moveCount) ]]
-        ]
-        
+        [ h2 [] [ text "Elm Candy Chomper!" ]
+        , p [] [ text "Use the arrow keys to navigate the grid and enter to chomp!" ]
+        , p [] [ text ("Location: (" ++ String.fromInt model.row ++ ", " ++ String.fromInt model.column ++ ") Moves: " ++ String.fromInt model.moveCount ++ " Fills: " ++ String.fromInt model.fillCount) ]
         , renderGrid model.grid model.row model.column
-        
         ]
 
 
 renderGrid : List (List Color) -> Int -> Int -> Html msg
 renderGrid grd row col =
     grd
-        |> List.indexedMap (\idx l -> ul [ class "row" ] [ renderList l row col idx])
+        |> List.indexedMap (\idx l -> ul [ class "row" ] [ renderList l row col idx ])
         |> ul []
 
 
 renderList : List Color -> Int -> Int -> Int -> Html msg
 renderList lst row col currCol =
     lst
-        |> List.indexedMap (\idx l -> if row == idx && col == currCol then
-         li [class "selected"] [ text (colorToString l) ] else
-         li [] [ text (colorToString l) ])
+        |> List.indexedMap
+            (\idx l ->
+                if row == idx && col == currCol then
+                    li [ class "selected" ] [ text (colorToString l) ]
+
+                else
+                    li [] [ text (colorToString l) ]
+            )
         |> ul []
 
 
