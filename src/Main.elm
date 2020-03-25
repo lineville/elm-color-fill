@@ -1,14 +1,13 @@
 module Main exposing (..)
 
--- import Random
-
 import Array exposing (fromList, get)
 import Browser
 import Browser.Events as Events
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Json.Decode as Decode
-import List exposing (append, length)
+import List exposing (..)
 import String
 
 
@@ -64,6 +63,19 @@ type Color
     | Black
 
 
+type Operator
+    = Add
+    | Subtract
+    | Multiply
+    | Divide
+    | EmptyOp
+
+
+type Token
+    = Operator Operator
+    | Operand Int
+
+
 
 ---- MODEL ----
 
@@ -77,6 +89,8 @@ type alias Model =
     , completed : Bool
     , teleportEnabled : Bool
     , grid : List (List Color)
+    , tokens : List Token
+    , expressionResult : Int
     }
 
 
@@ -90,6 +104,8 @@ init =
       , completed = False
       , teleportEnabled = False
       , grid = generateGrid 10
+      , tokens = [ Operand 15, Operand 7, Operand 1, Operand 1, Operator Add, Operator Subtract, Operator Divide, Operand 3, Operator Multiply, Operand 2, Operand 1, Operand 1, Operator Add, Operator Add, Operator Subtract ]
+      , expressionResult = 0
       }
     , Cmd.none
     )
@@ -147,6 +163,7 @@ type Msg
     | KeyDowns Direction
     | ClearPressed
     | NoOp
+    | Calculate
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -184,6 +201,9 @@ update msg model =
         ClearPressed ->
             ( model, Cmd.none )
 
+        Calculate ->
+            ( { model | expressionResult = postFixCalculate model.tokens }, Cmd.none )
+
 
 chomp : List (List Color) -> List (List Color)
 chomp grid =
@@ -193,6 +213,99 @@ chomp grid =
 
         x :: xs ->
             append xs [ x ]
+
+
+postFixCalculate : List Token -> Int
+postFixCalculate tokens =
+    postFixHelper tokens []
+
+
+postFixHelper : List Token -> List Token -> Int
+postFixHelper tokens stack =
+    case ( head tokens, stack ) of
+        --- Non Empty List, stack has at least two tokens ---
+        ( Just top, first :: second :: rest ) ->
+            case top of
+                Operator op ->
+                    postFixHelper (Maybe.withDefault [] (tail tokens)) (evaluateSimpleExpression (unwrapOperand second) op (unwrapOperand first) :: rest)
+
+                Operand _ ->
+                    postFixHelper (Maybe.withDefault [] (tail tokens)) (top :: stack)
+
+        --- Non Empty List, stack has less than two tokens ---
+        ( Just top, _ ) ->
+            case top of
+                Operator _ ->
+                    9999
+
+                Operand _ ->
+                    postFixHelper (Maybe.withDefault [] (tail tokens)) (top :: stack)
+
+        --- Empty List, Non Empty stack
+        ( Nothing, first :: _ ) ->
+            unwrapOperand first
+
+        --- Empty List, Empty Stack
+        ( Nothing, _ ) ->
+            9999
+
+
+unwrapOperand : Token -> Int
+unwrapOperand token =
+    case token of
+        Operator _ ->
+            9999
+
+        Operand op ->
+            op
+
+
+unwrapOperator : Token -> Operator
+unwrapOperator token =
+    case token of
+        Operator op ->
+            op
+
+        Operand _ ->
+            EmptyOp
+
+
+opToString : Operator -> String
+opToString op =
+    case op of
+        Add ->
+            "+"
+
+        Subtract ->
+            "-"
+
+        Multiply ->
+            "*"
+
+        Divide ->
+            "/"
+
+        EmptyOp ->
+            "_"
+
+
+evaluateSimpleExpression : Int -> Operator -> Int -> Token
+evaluateSimpleExpression operand1 operator operand2 =
+    case operator of
+        Add ->
+            Operand (operand1 + operand2)
+
+        Subtract ->
+            Operand (operand1 - operand2)
+
+        Multiply ->
+            Operand (operand1 * operand2)
+
+        Divide ->
+            Operand (operand1 // operand2)
+
+        EmptyOp ->
+            Operand 0
 
 
 type Direction
